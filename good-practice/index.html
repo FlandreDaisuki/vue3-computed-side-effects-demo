@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Good Practice</title>
+  <style>
+    body { background-color: lightseagreen; }
+    .buttons { display: flex; gap: 1rem; }
+    button, pre { font-size: 1rem; }
+    pre { max-height: 80vh; overflow-y: auto;}
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <h1>Good Token</h1>
+    <h2>token: {{ token }}</h2>
+    <div class="buttons">
+      <button type="button" @click="newAndPrint">new token and print</button>
+      <button type="button" @click="clearAndPrint">clear token and print</button>
+      <button type="button" @click="refreshPage">refresh page</button>
+    </div>
+
+    <pre>{{ outputDisplay }}</pre>
+  </div>
+
+  <script type="module">
+    import { createApp, ref, computed, onMounted } from 'vue';
+
+    const _token = ref('');
+    const token = computed(() => _token.value || null);
+    const setToken = (t) => {
+      _token.value = t;
+      localStorage.setItem('good-token', t);
+    };
+
+    const clearToken = () => {
+      _token.value = '';
+      localStorage.removeItem('good-token');
+    };
+
+    createApp({
+      setup() {
+        const outputs = ref([]);
+        const outputDisplay = computed(() => outputs.value.join('\n'));
+
+        const clearAndPrint = () => {
+          outputs.value.push(
+            `[clear:before] token.value = ${token.value}`,
+            `[clear:before] localStorage.getItem('good-token') = ${localStorage.getItem('good-token')}`
+          );
+          clearToken();
+          outputs.value.push(
+            `[clear:after] token.value = ${token.value}`,
+            `[clear:after] localStorage.getItem('good-token') = ${localStorage.getItem('good-token')}`
+          );
+        };
+
+        const newAndPrint = () => {
+          outputs.value.push(
+            `[new:before] token.value = ${token.value}`,
+            `[new:before] localStorage.getItem('good-token') = ${localStorage.getItem('good-token')}`
+          );
+          setToken(Math.random());
+          outputs.value.push(
+            `[new:after] token.value = ${token.value}`,
+            `[new:after] localStorage.getItem('good-token') = ${localStorage.getItem('good-token')}`
+          );
+        };
+
+        const refreshPage = () => location.reload();
+
+        onMounted(() => {
+          if(localStorage.getItem('good-token')) {
+            setToken(localStorage.getItem('good-token'));
+          }
+        })
+
+        return {
+          token,
+          outputDisplay,
+          clearAndPrint,
+          newAndPrint,
+          refreshPage,
+        }
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

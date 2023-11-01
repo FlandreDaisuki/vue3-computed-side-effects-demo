@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bad Practice</title>
+  <style>
+    body { background-color: lightpink; }
+    .buttons { display: flex; gap: 1rem; }
+    button, pre { font-size: 1rem; }
+    pre { max-height: 80vh; overflow-y: auto;}
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <h1>Bad Token</h1>
+    <h2>token: {{ token }}</h2>
+    <div class="buttons">
+      <button type="button" @click="newAndPrint">new token and print</button>
+      <button type="button" @click="clearAndPrint">clear token and print</button>
+      <button type="button" @click="refreshPage">refresh page</button>
+    </div>
+
+    <pre>{{ outputDisplay }}</pre>
+  </div>
+
+  <script type="module">
+    import { createApp, ref, computed } from 'vue';
+
+    const _token = ref('');
+    const token = computed(() => _token.value || localStorage.getItem('bad-token') || null);
+    const setToken = (t) => {
+      _token.value = t;
+      localStorage.setItem('bad-token', t);
+    };
+
+    const clearToken = () => {
+      _token.value = '';
+      localStorage.removeItem('bad-token');
+    };
+
+    createApp({
+      setup() {
+        const outputs = ref([]);
+        const outputDisplay = computed(() => outputs.value.join('\n'));
+
+        const clearAndPrint = () => {
+          outputs.value.push(
+            `[clear:before] token.value = ${token.value}`,
+            `[clear:before] localStorage.getItem('bad-token') = ${localStorage.getItem('bad-token')}`
+          );
+          clearToken();
+          outputs.value.push(
+            `[clear:after] token.value = ${token.value}`,
+            `[clear:after] localStorage.getItem('bad-token') = ${localStorage.getItem('bad-token')}`
+          );
+        };
+
+        const newAndPrint = () => {
+          outputs.value.push(
+            `[new:before] token.value = ${token.value}`,
+            `[new:before] localStorage.getItem('bad-token') = ${localStorage.getItem('bad-token')}`
+          );
+          setToken(Math.random());
+          outputs.value.push(
+            `[new:after] token.value = ${token.value}`,
+            `[new:after] localStorage.getItem('bad-token') = ${localStorage.getItem('bad-token')}`
+          );
+        };
+
+        const refreshPage = () => location.reload();
+
+        return {
+          token,
+          outputDisplay,
+          clearAndPrint,
+          newAndPrint,
+          refreshPage,
+        }
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
